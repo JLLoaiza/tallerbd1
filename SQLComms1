@@ -1,0 +1,38 @@
+//Listar nombres y códigos de los vendedores cuyo jefe es de código 5
+select "nombreVendedor", "pk_codVendedor" 
+from tbl_vendedor
+where "codJefe" = '5'; 
+
+//Listar nombres de municipios que empiezan por la misma letra con la que terminan
+select "nombreMunicipio"
+from tbl_municipio
+where substr("nombreMunicipio", 1, 1) = substr("nombreMunicipio", char_length("nombreMunicipio"), 1);
+
+//Listar codigo, descripcion, precio original, precio en promocion y descuento de los articulos
+//los cuales sus precios son mayores a 10000, donde los articulos con precio menor de 20000 se le aplica un 10% de dto
+//los articulos con precio menor de 30000 se le aplica el 20% de dto, los articulos con precio menor de 40000 se les aplica
+//el 30% de dto y los articulos con precio mayor de 40000 se les aplica el 40% de dto
+
+select "pk_codArticulo", "descArticulo", 
+"precioArticulo" as precio_original, 
+case when to_number("precioArticulo", '99999') < 20000 then to_number("precioArticulo", '99999') * 0.9
+	when to_number("precioArticulo", '99999') < 30000 then to_number("precioArticulo", '99999') * 0.8
+	when to_number("precioArticulo", '99999') < 40000 then to_number("precioArticulo", '99999') * 0.7
+	when to_number("precioArticulo", '99999') > 40000 then to_number("precioArticulo", '99999') * 0.6
+	end
+	as precio_promocion,
+case when to_number("precioArticulo", '99999') < 20000 then '10%'
+	when to_number("precioArticulo", '99999') < 30000 then '20%'
+	when to_number("precioArticulo", '99999') < 40000 then '30%'
+	when to_number("precioArticulo", '99999') > 40000 then '40%'
+	end
+	as descuento
+from tbl_articulo
+where to_number("precioArticulo", '99999') > 10000
+
+//listar codigo, fecha y codigo cliente de las facturas de los diez primeros días del mes de febrero del año pasado
+select "pk_codFactura", "fechaFactura", "fk_codClienteFactura", 
+from tbl_factura
+where to_number(to_char("fechaFactura", 'MM'), '99') = 2
+	and to_number(to_char("fechaFactura", 'DD'), '99') <= 10
+	and to_number(to_char("fechaFactura", 'yyyy'), '9999') = (to_number(to_char(current_timestamp, 'yyyy'), '9999')-1)
