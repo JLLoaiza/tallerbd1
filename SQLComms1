@@ -3,10 +3,17 @@ select "nombreVendedor", "pk_codVendedor"
 from tbl_vendedor
 where "codJefe" = '5'; 
 
+
+
+
+
 //Listar nombres de municipios que empiezan por la misma letra con la que terminan
 select "nombreMunicipio"
 from tbl_municipio
 where substr("nombreMunicipio", 1, 1) = substr("nombreMunicipio", char_length("nombreMunicipio"), 1);
+
+
+
 
 //Listar codigo, descripcion, precio original, precio en promocion y descuento de los articulos
 //los cuales sus precios son mayores a 10000, donde los articulos con precio menor de 20000 se le aplica un 10% de dto
@@ -28,7 +35,10 @@ case when to_number("precioArticulo", '99999') < 20000 then '10%'
 	end
 	as descuento
 from tbl_articulo
-where to_number("precioArticulo", '99999') > 10000
+where to_number("precioArticulo", '99999') > 10000}
+
+
+
 
 //listar codigo, fecha y codigo cliente de las facturas de los diez primeros días del mes de febrero del año pasado
 select "pk_codFactura", "fechaFactura", "fk_codClienteFactura", 
@@ -36,3 +46,23 @@ from tbl_factura
 where to_number(to_char("fechaFactura", 'MM'), '99') = 2
 	and to_number(to_char("fechaFactura", 'DD'), '99') <= 10
 	and to_number(to_char("fechaFactura", 'yyyy'), '9999') = (to_number(to_char(current_timestamp, 'yyyy'), '9999')-1)
+	
+	
+	
+	
+	
+--promedio de venta de licores por departamento
+select d.nombre_dep as "Departamento", avg((lin.precio * lin.cant)-lin.dto) as "Promedio"
+from articulo as a, linea_fac as lin, factura as fac, cajero as ca, sucursal as suc, barrio as ba, comuna as com, municipio as mun, departamento as d
+where 
+--a.fk_tipo_producto = 
+--and 
+lin.fk_codart = a.codart  
+and lin.fk_codfac = fac.codfac  
+and fac.fk_cod_cajero = ca.cod_cajero 
+and ca.fk_cod_sucursal = suc.cod_sucursal 
+and suc.fk_cod_barrio = ba.cod_barrio 
+and ba.fk_cod_comuna = com.cod_comuna 
+and com.fk_cod_municipio = mun.cod_mun
+and mun.fk_dep = d.cod_dep
+group by d.nombre_dep
