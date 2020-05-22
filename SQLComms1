@@ -1,25 +1,19 @@
-//Listar nombres y códigos de los vendedores cuyo jefe es de código 5
+--Listar nombres y códigos de los vendedores cuyo jefe es de código 5
 select "nombreVendedor", "pk_codVendedor" 
 from tbl_vendedor
 where "codJefe" = '5'; 
 
 
-
-
-
-//Listar nombres de municipios que empiezan por la misma letra con la que terminan
+--Listar nombres de municipios que empiezan por la misma letra con la que terminan
 select "nombreMunicipio"
 from tbl_municipio
 where substr("nombreMunicipio", 1, 1) = substr("nombreMunicipio", char_length("nombreMunicipio"), 1);
 
 
-
-
-//Listar codigo, descripcion, precio original, precio en promocion y descuento de los articulos
-//los cuales sus precios son mayores a 10000, donde los articulos con precio menor de 20000 se le aplica un 10% de dto
-//los articulos con precio menor de 30000 se le aplica el 20% de dto, los articulos con precio menor de 40000 se les aplica
-//el 30% de dto y los articulos con precio mayor de 40000 se les aplica el 40% de dto
-
+--Listar codigo, descripcion, precio original, precio en promocion y descuento de los articulos
+--los cuales sus precios son mayores a 10000, donde los articulos con precio menor de 20000 se le aplica un 10% de dto
+--los articulos con precio menor de 30000 se le aplica el 20% de dto, los articulos con precio menor de 40000 se les aplica
+--el 30% de dto y los articulos con precio mayor de 40000 se les aplica el 40% de dto
 select "pk_codArticulo", "descArticulo", 
 "precioArticulo" as precio_original, 
 case when to_number("precioArticulo", '99999') < 20000 then to_number("precioArticulo", '99999') * 0.9
@@ -38,9 +32,7 @@ from tbl_articulo
 where to_number("precioArticulo", '99999') > 10000}
 
 
-
-
-//listar codigo, fecha y codigo cliente de las facturas de los diez primeros días del mes de febrero del año pasado
+--listar codigo, fecha y codigo cliente de las facturas de los diez primeros días del mes de febrero del año pasado
 select "pk_codFactura", "fechaFactura", "fk_codClienteFactura", 
 from tbl_factura
 where to_number(to_char("fechaFactura", 'MM'), '99') = 2
@@ -48,15 +40,10 @@ where to_number(to_char("fechaFactura", 'MM'), '99') = 2
 	and to_number(to_char("fechaFactura", 'yyyy'), '9999') = (to_number(to_char(current_timestamp, 'yyyy'), '9999')-1)
 	
 	
-	
-	
-	
 --promedio de venta de licores por departamento
 select d.nombre_dep as "Departamento", avg((lin.precio * lin.cant)-lin.dto) as "Promedio"
 from articulo as a, linea_fac as lin, factura as fac, cajero as ca, sucursal as suc, barrio as ba, comuna as com, municipio as mun, departamento as d
 where 
---a.fk_tipo_producto = 
---and 
 lin.fk_codart = a.codart  
 and lin.fk_codfac = fac.codfac  
 and fac.fk_cod_cajero = ca.cod_cajero 
@@ -66,3 +53,57 @@ and ba.fk_cod_comuna = com.cod_comuna
 and com.fk_cod_municipio = mun.cod_mun
 and mun.fk_dep = d.cod_dep
 group by d.nombre_dep
+
+--/---------------------//---------------------/
+
+--listar departamentos
+select *
+from tbl_departamento
+
+--listar nombre, precio de articulos
+select "descArticulo", "precioArticulo"
+from tbl_articulo
+
+--listar facturas y nombreCliente
+select c."nombreCliente", f."pk_codFactura"
+from tbl_factura as f, tbl_cliente as c
+where f."fk_codClienteFactura" = c."pk_codCliente"
+order by c."nombreCliente"
+
+--contar facturas por cliente mostrando el nombre de cada cliente ordenado por cantidad de manera descendiente 
+select (count(f."fk_codClienteFactura")) as "cantidad de Clientes", (c."nombreCliente") as "código de Cliente"
+from tbl_factura as f, tbl_cliente as c
+where f."fk_codClienteFactura" = c."pk_codCliente"
+group by c."pk_codCliente"
+order by "cantidad de Clientes"
+
+--listar codigo, fecha y codigo cliente de las facturas de los diez primeros días del mes de mayo del año pasado
+select "pk_codFactura", "fechaFactura", "fk_codClienteFactura"
+from tbl_factura
+where to_number(to_char("fechaFactura", 'MM'), '99') = 5
+	and to_number(to_char("fechaFactura", 'DD'), '99') <= 10
+	and to_number(to_char("fechaFactura", 'yyyy'), '9999') = (to_number(to_char(current_timestamp, 'yyyy'), '9999')-1)
+	
+--promedio de precios de linea factura por articulo ordenado por precios de manera ascendente
+select avg(lf."cantLineaFactura"*to_number(a."precioArticulo", '99999')) as "promedio", a."descArticulo"
+from "tbl_lineaFactura" as lf
+inner join tbl_articulo as a on lf."fk_codArticulo" = a."pk_codArticulo"
+group by a."descArticulo"
+order by "promedio" asc
+
+--update precio linea factura
+update "tbl_lineaFactura" as lf
+set "cantLineaFactura" = "cantLineaFactura" - to_number(a."stockArticulo", '99999')
+from tbl_articulo as a
+where a."pk_codArticulo" = lf."fk_codArticulo"
+
+--listar productos que no se han vendido
+select a."descArticulo"
+from "tbl_lineaFactura" as lf
+right join tbl_articulo as a on lf."fk_codArticulo" = a."pk_codArticulo"
+where lf."fk_codArticulo" = NULL
+
+--insertar un nuevo articulo
+INSERT INTO tbl_articulo 
+values((select max(to_number(a."pk_codArticulo", '999')) from tbl_articulo as a)+1, 'carne de cordero', '30000', '200', '100')
+
